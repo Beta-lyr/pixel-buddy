@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "桌面像素宠物",
   "type": "module",
+  "packageManager": "pnpm@8.15.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
