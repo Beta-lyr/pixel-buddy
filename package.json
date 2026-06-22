@@ -1,6 +1,6 @@
 {
   "name": "pixel-buddy",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "桌面像素宠物",
   "type": "module",
   "scripts": {
