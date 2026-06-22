@@ -3,3 +3,4 @@
  */
 
 export * from './animator';
+export * from './sprite-manager';

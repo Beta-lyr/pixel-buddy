@@ -31,51 +31,9 @@
         cursor: grabbing;
       }
 
-      .pet {
-        width: 64px;
-        height: 64px;
+      .pet-canvas {
         image-rendering: pixelated;
         image-rendering: crisp-edges;
-        background-color: #FF6B6B;
-        border-radius: 8px;
-        transition: transform 0.1s ease;
-      }
-
-      .pet:hover {
-        transform: scale(1.05);
-      }
-
-      .pet.dragging {
-        transform: scale(0.95);
-      }
-
-      /* 基础动画 */
-      @keyframes idle {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-4px); }
-      }
-
-      .pet.idle {
-        animation: idle 2s ease-in-out infinite;
-      }
-
-      @keyframes happy {
-        0%, 100% { transform: scale(1) rotate(0deg); }
-        25% { transform: scale(1.1) rotate(-5deg); }
-        75% { transform: scale(1.1) rotate(5deg); }
-      }
-
-      .pet.happy {
-        animation: happy 0.5s ease-in-out;
-      }
-
-      @keyframes sleep {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-      }
-
-      .pet.sleep {
-        animation: sleep 3s ease-in-out infinite;
       }
 
       /* 爱心特效 */
@@ -123,7 +81,7 @@
   </head>
   <body>
     <div class="pet-container" id="pet-container">
-      <div class="pet idle" id="pet"></div>
+      <canvas class="pet-canvas" id="pet-canvas" width="128" height="128"></canvas>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

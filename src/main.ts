@@ -13,6 +13,7 @@ import { ruleEngine } from './core/engine';
 // 导入系统模块
 import { inputHandler } from './systems/interaction';
 import { animator } from './systems/animation';
+import { spriteManager } from './systems/animation';
 import { appearanceManager } from './systems/customization';
 import { personalityManager } from './systems/customization';
 import { themeManager } from './systems/theme';
@@ -28,7 +29,9 @@ import { storageManager } from './utils/storage';
 // 宠物应用类
 class PetApp {
   private container: HTMLElement | null = null;
-  private petElement: HTMLElement | null = null;
+  private canvas: HTMLCanvasElement | null = null;
+  private currentFrame: number = 0;
+  private _frameInterval: number | null = null;
 
   constructor() {
     this.init();
@@ -41,9 +44,9 @@ class PetApp {
 
       // 获取DOM元素
       this.container = document.getElementById('pet-container');
-      this.petElement = document.getElementById('pet');
+      this.canvas = document.getElementById('pet-canvas') as HTMLCanvasElement;
 
-      if (!this.container || !this.petElement) {
+      if (!this.container || !this.canvas) {
         throw new Error('Required DOM elements not found');
       }
 
@@ -52,6 +55,9 @@ class PetApp {
 
       // 设置事件监听器
       this.setupEventListeners();
+
+      // 启动动画循环
+      this.startAnimationLoop();
 
       // 触发系统就绪事件
       eventBus.emit(EventTypes.SYSTEM_READY);
@@ -65,23 +71,26 @@ class PetApp {
 
   // 初始化各个系统
   private async initializeSystems(): Promise<void> {
+    // 初始化精灵图管理器
+    spriteManager.init(this.canvas!);
+
     // 初始化输入处理器
-    inputHandler.init(this.petElement!);
+    inputHandler.init(this.canvas!);
 
     // 初始化动画控制器
-    animator.init(this.petElement!);
+    animator.init(this.canvas!);
 
     // 初始化外观管理器
-    appearanceManager.init(this.petElement!);
+    appearanceManager.init(this.canvas!);
 
     // 初始化主题管理器
-    themeManager.init(this.petElement!);
+    themeManager.init(this.canvas!);
 
     // 初始化宠物UI
-    petUI.init(this.container!, this.petElement!);
+    petUI.init(this.container!, this.canvas!);
 
     // 初始化规则引擎
-    ruleEngine.start(10000); // 每10秒检查一次规则
+    ruleEngine.start(10000);
 
     // 加载配置
     await this.loadConfiguration();
@@ -108,6 +117,12 @@ class PetApp {
       const themeId = await storageManager.load<string>('currentTheme');
       if (themeId) {
         await themeManager.switchTheme(themeId);
+      }
+
+      // 加载自定义精灵图
+      const customSprites = await storageManager.load<Record<string, string>>('customSprites');
+      if (customSprites) {
+        await spriteManager.loadSprites(customSprites);
       }
 
       logger.info('Configuration loaded');
@@ -148,165 +163,102 @@ class PetApp {
       this.handleRightClick(data);
     });
 
-    eventBus.on(EventTypes.INTERACTION_HOVER, (data) => {
-      this.handleHover(data);
-    });
-
-    eventBus.on(EventTypes.INTERACTION_HOVER_END, (data) => {
-      this.handleHoverEnd(data);
-    });
-
-    // 监听行为事件
-    eventBus.on(EventTypes.BEHAVIOR_TRIGGER, (data) => {
-      this.handleBehaviorTrigger(data);
-    });
-
-    // 监听配置变化事件
-    eventBus.on(EventTypes.CONFIG_CHANGE, (data) => {
-      this.handleConfigChange(data);
-    });
-
     logger.info('Event listeners set up');
+  }
+
+  // 启动动画循环
+  private startAnimationLoop(): void {
+    const fps = 8; // 8帧每秒
+    this._frameInterval = window.setInterval(() => {
+      this.updateAnimation();
+    }, 1000 / fps);
+  }
+
+  // 停止动画循环
+  private stopAnimationLoop(): void {
+    if (this._frameInterval) {
+      clearInterval(this._frameInterval);
+      this._frameInterval = null;
+    }
+  }
+
+  // 更新动画
+  private updateAnimation(): void {
+    const currentState = stateMachine.getCurrentState();
+    const sprite = spriteManager.getSprite(currentState);
+
+    if (sprite) {
+      this.currentFrame = (this.currentFrame + 1) % sprite.config.frameCount;
+      spriteManager.drawFrame(currentState, this.currentFrame);
+    }
   }
 
   // 处理状态变化
   private handleStateChange(data: any): void {
     const { from, to, reason } = data.payload;
-
     logger.info(`State changed: ${from} -> ${to} (${reason})`);
 
-    // 更新动画
-    if (this.petElement) {
-      // 移除旧状态类
-      this.petElement.classList.remove(from);
+    // 重置帧计数
+    this.currentFrame = 0;
 
-      // 添加新状态类
-      this.petElement.classList.add(to);
-
-      // 播放对应动画
-      animator.play(to);
-    }
+    // 立即绘制新状态的第一帧
+    spriteManager.drawFrame(to, 0);
   }
 
   // 处理点击
   private handleClick(data: any): void {
     logger.info('Click detected', data.payload);
-
-    // 切换到开心状态
     stateMachine.transition('click', 'user_click');
-
-    // 创建脉冲效果
-    if (this.petElement) {
-      petUI.createPulseEffect(this.petElement);
+    if (this.canvas) {
+      petUI.createPulseEffect(this.canvas);
     }
-
-    // 更新最后交互时间
-    this.updateLastInteraction();
   }
 
   // 处理双击
   private handleDoubleClick(data: any): void {
     logger.info('Double click detected', data.payload);
-
-    // 切换到开心状态
     stateMachine.transition('click', 'user_double_click');
-
-    // 创建弹跳效果
-    if (this.petElement) {
-      petUI.createBounceEffect(this.petElement);
+    if (this.canvas) {
+      petUI.createBounceEffect(this.canvas);
     }
-
-    // 更新最后交互时间
-    this.updateLastInteraction();
   }
 
   // 处理拖拽开始
   private handleDragStart(data: any): void {
     logger.info('Drag started', data.payload);
-
-    // 切换到拖拽状态
     stateMachine.forceTransition('drag', 'user_drag');
-
-    // 更新最后交互时间
-    this.updateLastInteraction();
   }
 
   // 处理拖拽移动
   private handleDragMove(data: any): void {
     const { x, y } = data.payload;
-
-    // 更新容器位置
     if (this.container) {
       this.container.style.position = 'absolute';
       this.container.style.left = `${x}px`;
       this.container.style.top = `${y}px`;
     }
-
-    // 更新窗口位置
     invoke('set_window_position', { x, y });
   }
 
   // 处理拖拽结束
   private handleDragEnd(data: any): void {
     logger.info('Drag ended', data.payload);
-
-    // 切换回空闲状态
     stateMachine.transition('drag_end', 'drag_finished');
-
-    // 更新最后交互时间
-    this.updateLastInteraction();
   }
 
   // 处理右键点击
   private handleRightClick(data: any): void {
     logger.info('Right click detected', data.payload);
-
-    // 显示上下文菜单
     this.showContextMenu(data.payload.x, data.payload.y);
-  }
-
-  // 处理悬停
-  private handleHover(data: any): void {
-    logger.info('Hover detected', data.payload);
-
-    // 可以在这里添加悬停效果
-  }
-
-  // 处理悬停结束
-  private handleHoverEnd(data: any): void {
-    logger.info('Hover ended', data.payload);
-
-    // 可以在这里移除悬停效果
-  }
-
-  // 处理行为触发
-  private handleBehaviorTrigger(data: any): void {
-    const { ruleId, ruleName } = data.payload;
-
-    logger.info(`Behavior triggered: ${ruleName} (${ruleId})`);
-
-    // 可以在这里添加行为触发的视觉反馈
-  }
-
-  // 处理配置变化
-  private handleConfigChange(data: any): void {
-    const { key, value } = data.payload;
-
-    logger.info(`Config changed: ${key}`, value);
-
-    // 保存配置
-    storageManager.save(key, value);
   }
 
   // 显示上下文菜单
   private showContextMenu(x: number, y: number): void {
-    // 移除现有菜单
     const existingMenu = document.querySelector('.context-menu');
     if (existingMenu) {
       existingMenu.remove();
     }
 
-    // 创建菜单
     const menu = document.createElement('div');
     menu.className = 'context-menu';
     menu.style.cssText = `
@@ -321,7 +273,6 @@ class PetApp {
       z-index: 1000;
     `;
 
-    // 菜单项
     const items = [
       { text: '摸摸头', action: () => this.handleClick({ payload: { x, y } }) },
       { text: '设置', action: () => this.openSettings() },
@@ -351,7 +302,6 @@ class PetApp {
 
     document.body.appendChild(menu);
 
-    // 点击其他地方关闭菜单
     const closeMenu = (e: MouseEvent) => {
       if (!menu.contains(e.target as Node)) {
         menu.remove();
@@ -372,72 +322,27 @@ class PetApp {
   // 退出应用
   private quit(): void {
     logger.info('Quitting application...');
-
-    // 保存配置
+    this.stopAnimationLoop();
     this.saveConfiguration();
-
-    // 隐藏窗口
     invoke('toggle_window_visibility');
   }
 
   // 保存配置
   private async saveConfiguration(): Promise<void> {
     try {
-      // 保存外观配置
       await storageManager.save('appearance', appearanceManager.getConfig());
-
-      // 保存个性配置
       await storageManager.save('personality', personalityManager.getConfig());
-
-      // 保存当前主题
       await storageManager.save('currentTheme', themeManager.getCurrentTheme().id);
-
       logger.info('Configuration saved');
     } catch (error) {
       logger.error('Failed to save configuration', error);
     }
   }
 
-  // 更新最后交互时间
-  private updateLastInteraction(): void {
-    // 这里可以更新规则引擎中的交互时间
-    // 暂时只是记录日志
-    logger.debug('Last interaction updated');
-  }
-
   // 处理错误
   private handleError(error: any): void {
     logger.error('Application error', error);
-
-    // 切换到错误状态
     stateMachine.forceTransition('error', 'error_occurred');
-
-    // 显示错误通知
-    this.showErrorNotification(error.message || '发生未知错误');
-  }
-
-  // 显示错误通知
-  private showErrorNotification(message: string): void {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #ff6b6b;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 4px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      z-index: 10000;
-      font-size: 14px;
-    `;
-    notification.textContent = message;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      notification.remove();
-    }, 3000);
   }
 }
 
