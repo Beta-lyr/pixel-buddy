@@ -5,6 +5,7 @@
 
 import { eventBus } from '../../core/events/event-bus';
 import { EventTypes } from '../../core/events/event-types';
+import { spriteManager } from '../animation';
 
 // 颜色配置
 export interface ColorConfig {
@@ -183,8 +184,8 @@ export class AppearanceManager {
 
     const { size, opacity, colors, animation, display } = this.config;
 
-    // 应用大小
-    this.element.style.transform = `scale(${size})`;
+    // 应用大小（通过精灵图管理器）
+    spriteManager.setScale(size);
 
     // 应用透明度
     this.element.style.opacity = `${opacity}`;

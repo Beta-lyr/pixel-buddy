@@ -12,8 +12,8 @@
     "windows": [
       {
         "title": "PixelBuddy",
-        "width": 200,
-        "height": 200,
+        "width": 120,
+        "height": 120,
         "transparent": true,
         "decorations": false,
         "alwaysOnTop": true,

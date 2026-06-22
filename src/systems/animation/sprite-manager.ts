@@ -27,6 +27,7 @@ export class SpriteManager {
   private useCodeDrawing: boolean = true;
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
+  private scale: number = 1;
 
   // 默认精灵图配置
   private defaultConfigs: Record<string, SpriteConfig> = {
@@ -48,6 +49,16 @@ export class SpriteManager {
       SpriteManager.instance = new SpriteManager();
     }
     return SpriteManager.instance;
+  }
+
+  // 设置缩放因子
+  setScale(scale: number): void {
+    this.scale = Math.max(0.5, Math.min(3, scale));
+  }
+
+  // 获取缩放因子
+  getScale(): number {
+    return this.scale;
   }
 
   // 初始化
@@ -134,16 +145,17 @@ export class SpriteManager {
     const sourceX = (frameIndex % sprite.config.frameCount) * frameWidth;
     const sourceY = 0;
 
-    // 计算居中绘制位置
-    const destX = (this.canvas!.width - frameWidth * 4) / 2;
-    const destY = (this.canvas!.height - frameHeight * 4) / 2;
+    // 计算居中绘制位置（使用缩放因子）
+    const drawScale = 2 * this.scale;
+    const destX = (this.canvas!.width - frameWidth * drawScale) / 2;
+    const destY = (this.canvas!.height - frameHeight * drawScale) / 2;
 
     // 绘制放大的精灵图
     this.ctx.imageSmoothingEnabled = false; // 像素完美渲染
     this.ctx.drawImage(
       sprite.image,
       sourceX, sourceY, frameWidth, frameHeight,
-      destX, destY, frameWidth * 4, frameHeight * 4
+      destX, destY, frameWidth * drawScale, frameHeight * drawScale
     );
   }
 
@@ -153,7 +165,7 @@ export class SpriteManager {
 
     const centerX = this.canvas.width / 2;
     const centerY = this.canvas.height / 2;
-    const size = 48;
+    const size = 28 * this.scale;
 
     // 根据状态选择颜色
     const colors = this.getStateColors(state);
