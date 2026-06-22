@@ -19,6 +19,7 @@ import { themeManager } from './systems/theme';
 
 // 导入UI模块
 import { settingsDialog } from './ui/settings';
+import { petUI } from './ui/components';
 
 // 导入工具模块
 import { logger } from './utils/logger';
@@ -75,6 +76,9 @@ class PetApp {
 
     // 初始化主题管理器
     themeManager.init(this.petElement!);
+
+    // 初始化宠物UI
+    petUI.init(this.container!, this.petElement!);
 
     // 初始化规则引擎
     ruleEngine.start(10000); // 每10秒检查一次规则
@@ -191,8 +195,10 @@ class PetApp {
     // 切换到开心状态
     stateMachine.transition('click', 'user_click');
 
-    // 创建爱心效果
-    this.createHeartEffect();
+    // 创建脉冲效果
+    if (this.petElement) {
+      petUI.createPulseEffect(this.petElement);
+    }
 
     // 更新最后交互时间
     this.updateLastInteraction();
@@ -205,8 +211,10 @@ class PetApp {
     // 切换到开心状态
     stateMachine.transition('click', 'user_double_click');
 
-    // 创建特殊效果
-    this.createSpecialEffect();
+    // 创建弹跳效果
+    if (this.petElement) {
+      petUI.createBounceEffect(this.petElement);
+    }
 
     // 更新最后交互时间
     this.updateLastInteraction();
@@ -288,36 +296,6 @@ class PetApp {
 
     // 保存配置
     storageManager.save(key, value);
-  }
-
-  // 创建爱心效果
-  private createHeartEffect(): void {
-    if (!this.petElement) return;
-
-    const heart = document.createElement('div');
-    heart.className = 'heart';
-
-    const rect = this.petElement.getBoundingClientRect();
-    heart.style.left = `${rect.left + rect.width / 2 - 10}px`;
-    heart.style.top = `${rect.top - 10}px`;
-
-    document.body.appendChild(heart);
-
-    setTimeout(() => {
-      heart.remove();
-    }, 1000);
-  }
-
-  // 创建特殊效果
-  private createSpecialEffect(): void {
-    if (!this.petElement) return;
-
-    // 创建多个爱心效果
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => {
-        this.createHeartEffect();
-      }, i * 100);
-    }
   }
 
   // 显示上下文菜单

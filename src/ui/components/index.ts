@@ -3,3 +3,4 @@
  */
 
 export * from './config-manager';
+export * from './pet-ui';
