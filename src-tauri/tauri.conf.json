@@ -1,0 +1,46 @@
+{
+  "productName": "PixelBuddy",
+  "version": "0.1.0",
+  "identifier": "com.pixel-buddy.app",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "PixelBuddy",
+        "width": 200,
+        "height": 200,
+        "transparent": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "resizable": false,
+        "center": false,
+        "x": 100,
+        "y": 100
+      }
+    ],
+    "trayIcon": {
+      "iconPath": "icons/128x128.png",
+      "iconAsTemplate": true
+    },
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns.png",
+      "icons/icon.ico"
+    ]
+  }
+}

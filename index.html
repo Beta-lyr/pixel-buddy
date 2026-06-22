@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PixelBuddy</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: transparent;
+        overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .pet-container {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+      }
+
+      .pet-container:active {
+        cursor: grabbing;
+      }
+
+      .pet {
+        width: 64px;
+        height: 64px;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        background-color: #FF6B6B;
+        border-radius: 8px;
+        transition: transform 0.1s ease;
+      }
+
+      .pet:hover {
+        transform: scale(1.05);
+      }
+
+      .pet.dragging {
+        transform: scale(0.95);
+      }
+
+      /* 基础动画 */
+      @keyframes idle {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+      }
+
+      .pet.idle {
+        animation: idle 2s ease-in-out infinite;
+      }
+
+      @keyframes happy {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        25% { transform: scale(1.1) rotate(-5deg); }
+        75% { transform: scale(1.1) rotate(5deg); }
+      }
+
+      .pet.happy {
+        animation: happy 0.5s ease-in-out;
+      }
+
+      @keyframes sleep {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      .pet.sleep {
+        animation: sleep 3s ease-in-out infinite;
+      }
+
+      /* 爱心特效 */
+      .heart {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: #FF6B6B;
+        transform: rotate(45deg);
+        animation: float 1s ease-out forwards;
+        pointer-events: none;
+      }
+
+      .heart::before,
+      .heart::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: #FF6B6B;
+        border-radius: 50%;
+      }
+
+      .heart::before {
+        left: -10px;
+        top: 0;
+      }
+
+      .heart::after {
+        top: -10px;
+        left: 0;
+      }
+
+      @keyframes float {
+        0% {
+          opacity: 1;
+          transform: rotate(45deg) translateY(0) scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: rotate(45deg) translateY(-100px) scale(0.5);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pet-container" id="pet-container">
+      <div class="pet idle" id="pet"></div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
