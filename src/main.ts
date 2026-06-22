@@ -17,6 +17,9 @@ import { appearanceManager } from './systems/customization';
 import { personalityManager } from './systems/customization';
 import { themeManager } from './systems/theme';
 
+// 导入UI模块
+import { settingsDialog } from './ui/settings';
+
 // 导入工具模块
 import { logger } from './utils/logger';
 import { storageManager } from './utils/storage';
@@ -385,9 +388,7 @@ class PetApp {
   // 打开设置
   private openSettings(): void {
     logger.info('Opening settings...');
-
-    // TODO: 实现设置界面
-    alert('设置功能开发中...');
+    settingsDialog.open();
   }
 
   // 退出应用

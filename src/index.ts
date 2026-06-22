@@ -14,5 +14,8 @@ export * from './systems/animation';
 export * from './systems/customization';
 export * from './systems/theme';
 
+// UI模块
+export * from './ui';
+
 // 工具模块
 export * from './utils';
