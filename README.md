@@ -14,7 +14,7 @@
 
 ### 从 GitHub Releases 下载
 
-1. 访问 [Releases](https://github.com/YOUR_USERNAME/pixel-buddy/releases) 页面
+1. 访问 [Releases](https://github.com/Beta-lyr/pixel-buddy/releases) 页面
 2. 下载适合您操作系统的安装包：
    - **Windows**: `PixelBuddy_x.x.x_x64-setup.exe` 或 `PixelBuddy_x.x.x_x64_en-US.msi`
    - **macOS**: `PixelBuddy_x.x.x_aarch64.dmg` (Apple Silicon) 或 `PixelBuddy_x.x.x_x64.dmg` (Intel)
